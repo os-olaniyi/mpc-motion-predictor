@@ -1,0 +1,35 @@
+# config/simulation_config.yml
+
+initial_state:
+  x: 0.0
+  y: 0.0
+  theta: 0.0
+
+mpc:
+  horizon: 20
+  time_step: 0.1
+  state_weights: [10.0, 10.0, 1.0]
+  control_weights: [0.1, 0.1]
+  terminal_weight: 50.0
+  state_weight: 10.0    # Added this
+  control_weight: 0.1   # Added this
+  obstacle_weight: 10.0
+
+control_limits:
+  v_min: -2.0
+  v_max: 2.0
+  omega_min: -1.57
+  omega_max: 1.57
+
+simulation:
+  max_steps: 1000
+  num_points: 200
+  completion_threshold: 0.01
+  min_iterations: 50
+
+visualization:
+  update_interval: 5
+
+debug:
+  enabled: true       # Added this
+  log_level: DEBUG
