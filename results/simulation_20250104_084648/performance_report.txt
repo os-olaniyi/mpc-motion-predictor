@@ -1,0 +1,15 @@
+MPC Performance Report
+======================
+Total Iterations: 180
+Success Rate: 100.00%
+
+Timing Statistics
+-----------------
+Average Solve Time: 288.73 ms
+Maximum Solve Time: 798.09 ms
+
+Tracking Performance
+-------------------
+Average Error: 9.1279 m
+Maximum Error: 18.0115 m
+Constraint Violation Rate: 0.00%
