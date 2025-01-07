@@ -1,4 +1,4 @@
-# config/simulation_config.yml
+# Simulation configurations.
 
 initial_state:
   x: 0.0
@@ -11,8 +11,8 @@ mpc:
   state_weights: [10.0, 10.0, 1.0]
   control_weights: [0.1, 0.1]
   terminal_weight: 50.0
-  state_weight: 10.0    # Added this
-  control_weight: 0.1   # Added this
+  state_weight: 10.0   
+  control_weight: 0.1  
   obstacle_weight: 10.0
 
 control_limits:
@@ -31,5 +31,5 @@ visualization:
   update_interval: 5
 
 debug:
-  enabled: true       # Added this
+  enabled: true   
   log_level: DEBUG

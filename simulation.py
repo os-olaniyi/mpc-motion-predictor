@@ -1,5 +1,3 @@
-# simulation.py
-
 from mpc import (
     RobotState,
     MPCParams,
@@ -9,15 +7,16 @@ from mpc import (
     generate_reference_trajectory
 )
 
-import numpy as np
 from pathlib import Path
+from datetime import datetime
+from typing import Dict, Any
+from tqdm import tqdm
+
+import numpy as np
 import yaml
 import json
-from datetime import datetime
 import logging
-from typing import Dict, Any
 import matplotlib.pyplot as plt
-from tqdm import tqdm
 import time
 
 class SimulationEnvironment:
@@ -31,9 +30,9 @@ class SimulationEnvironment:
         # Setup basic logging first
         self.logger = logging.getLogger(__name__)
         logging.basicConfig(
-            level=logging.INFO,  # Start with INFO level
-            format='%(asctime)s - %(levelname)s - %(message)s',
-            handlers=[
+            level = logging.INFO,  
+            format = '%(asctime)s - %(levelname)s - %(message)s',
+            handlers = [
                 logging.FileHandler('simulation.log'),
                 logging.StreamHandler()
             ]
@@ -97,18 +96,18 @@ class SimulationEnvironment:
         try:
             # Create MPC parameters
             self.mpc_params = MPCParams(
-                N=self.config['mpc']['horizon'],
-                dt=self.config['mpc']['time_step'],
-                Q=np.diag(self.config['mpc']['state_weights']),
-                R=np.diag(self.config['mpc']['control_weights']),
-                terminal_weight=self.config['mpc']['terminal_weight'],
-                state_weight=self.config['mpc']['state_weight'],
-                control_weight=self.config['mpc']['control_weight'],
-                v_max=self.config['control_limits']['v_max'],
-                v_min=self.config['control_limits']['v_min'],
-                omega_max=self.config['control_limits']['omega_max'],
-                omega_min=self.config['control_limits']['omega_min'],
-                debug=self.config['debug']['enabled']
+                N = self.config['mpc']['horizon'],
+                dt = self.config['mpc']['time_step'],
+                Q = np.diag(self.config['mpc']['state_weights']),
+                R = np.diag(self.config['mpc']['control_weights']),
+                terminal_weight = self.config['mpc']['terminal_weight'],
+                state_weight = self.config['mpc']['state_weight'],
+                control_weight = self.config['mpc']['control_weight'],
+                v_max = self.config['control_limits']['v_max'],
+                v_min = self.config['control_limits']['v_min'],
+                omega_max = self.config['control_limits']['omega_max'],
+                omega_min = self.config['control_limits']['omega_min'],
+                debug = self.config['debug']['enabled']
             )
             
             # Initialize MPC controller
@@ -151,23 +150,23 @@ class SimulationEnvironment:
         try:
             # Initialize simulation state
             current_state = RobotState(
-                x=self.config['initial_state']['x'],
-                y=self.config['initial_state']['y'],
-                theta=self.config['initial_state']['theta']
+                x = self.config['initial_state']['x'],
+                y = self.config['initial_state']['y'],
+                theta = self.config['initial_state']['theta']
             )
             
             # Generate reference trajectory
             reference_trajectory = generate_reference_trajectory(
-                num_points=self.config['simulation']['num_points']
+                num_points = self.config['simulation']['num_points']
             )
             
             # Simulation parameters
             dt = self.config['mpc']['time_step']
             simulation_time = 0.0
-            robot_path = [current_state]  # Initialize with starting state
+            robot_path = [current_state]                # This initialize the simulation with starting state
             
             self.logger.info("Starting simulation...")
-            self.logger.debug(f"Initial state: x={current_state.x}, y={current_state.y}, theta={current_state.theta}")
+            self.logger.debug(f"Initial state: x = {current_state.x}, y = {current_state.y}, theta = {current_state.theta}")
             self.logger.debug(f"Reference trajectory points: {len(reference_trajectory)}")
             
             # Store complete trajectory data
@@ -201,7 +200,7 @@ class SimulationEnvironment:
                     self.logger.error("Failed to compute control input")
                     break
                 
-                self.logger.debug(f"Computed control: v={control[0]:.4f}, omega={control[1]:.4f}")
+                self.logger.debug(f"Computed control: v = {control[0]:.4f}, omega = {control[1]:.4f}")
                     
                 # Store predicted trajectory
                 if predicted_trajectory is not None:
@@ -216,7 +215,7 @@ class SimulationEnvironment:
                 )
                 next_state = RobotState.from_array(next_state_array)
                 
-                self.logger.debug(f"Next state: x={next_state.x:.4f}, y={next_state.y:.4f}, theta={next_state.theta:.4f}")
+                self.logger.debug(f"Next state: x = {next_state.x:.4f}, y = {next_state.y:.4f}, theta = {next_state.theta:.4f}")
                 
                 # Calculate performance metrics
                 computation_time = time.time() - step_start_time
@@ -229,33 +228,33 @@ class SimulationEnvironment:
                 
                 # Record step data
                 self.record_step(
-                    timestamp=simulation_time,
-                    state=current_state,
-                    control=control,
-                    reference=reference_segment[0],
-                    predicted_traj=predicted_trajectory,
-                    computation_time=computation_time
+                    timestamp = simulation_time,
+                    state = current_state,
+                    control = control,
+                    reference = reference_segment[0],
+                    predicted_traj = predicted_trajectory,
+                    computation_time = computation_time
                 )
                 
                 # Update performance monitor
                 if control is not None:  # Only record if we have valid control
                     self.performance_monitor.record_iteration(
-                        solve_time=computation_time,
-                        tracking_error=tracking_error,
-                        control_input=control,
-                        predicted_trajectory=predicted_trajectory,
-                        actual_state=current_state,
-                        reference_point=reference_segment[0],
-                        optimization_status=self.mpc.solver.stats()['return_status']
+                        solve_time = computation_time,
+                        tracking_error = tracking_error,
+                        control_input = control,
+                        predicted_trajectory = predicted_trajectory,
+                        actual_state = current_state,
+                        reference_point = reference_segment[0],
+                        optimization_status = self.mpc.solver.stats()['return_status']
                     )
                 
                 # Update visualization
                 if step % max(1, self.config['visualization']['update_interval'] // 2) == 0:
                     self.visualizer.update(
-                        robot_path=robot_path,
-                        reference_trajectory=reference_trajectory,
-                        predicted_trajectory=predicted_trajectory,
-                        performance_metrics=self.performance_monitor.metrics
+                        robot_path = robot_path,
+                        reference_trajectory = reference_trajectory,
+                        predicted_trajectory = predicted_trajectory,
+                        performance_metrics = self.performance_monitor.metrics
                     )
                     self.logger.debug(f"Updated visualization at step {step}")
                 
@@ -282,7 +281,7 @@ class SimulationEnvironment:
             
             # Log final statistics
             self.logger.info(f"Simulation completed with {len(robot_path)} steps")
-            self.logger.info(f"Final position: x={current_state.x:.4f}, y={current_state.y:.4f}, theta={current_state.theta:.4f}")
+            self.logger.info(f"Final position: x = {current_state.x:.4f}, y = {current_state.y:.4f}, theta = {current_state.theta:.4f}")
             self.logger.info(f"Average tracking error: {np.mean(self.simulation_data['tracking_errors']):.4f}")
             
             self.logger.info("Simulation completed successfully")
@@ -298,10 +297,10 @@ class SimulationEnvironment:
             # Create result directory
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             result_dir = Path(output_dir) / f"simulation_{timestamp}"
-            result_dir.mkdir(parents=True, exist_ok=True)
+            result_dir.mkdir(parents = True, exist_ok=True)
             
             # Save complete trajectory plot
-            plt.figure(figsize=(15, 10))
+            plt.figure(figsize = (15, 10))
             
             # Convert trajectories to numpy arrays for plotting
             robot_states = np.array(self.complete_trajectory['robot_states'])
@@ -309,24 +308,24 @@ class SimulationEnvironment:
             
             # Plot reference trajectory
             plt.plot(self.final_reference[:, 0], self.final_reference[:, 1], 
-                    'g--', label='Reference', linewidth=2)
+                    'g--', label = 'Reference', linewidth = 2)
             
             # Plot actual trajectory
             plt.plot(robot_states[:, 0], robot_states[:, 1], 
-                    'b-', label='Actual', linewidth=2)
+                    'b-', label = 'Actual', linewidth = 2)
             
             # Plot start and end points
             plt.scatter(robot_states[0, 0], robot_states[0, 1], 
-                    c='g', marker='o', s=100, label='Start')
+                    c = 'g', marker = 'o', s = 100, label = 'Start')
             plt.scatter(robot_states[-1, 0], robot_states[-1, 1], 
-                    c='r', marker='x', s=100, label='End')
+                    c = 'r', marker = 'x', s = 100, label = 'End')
             
             # Plot final predicted trajectory if available
             if self.complete_trajectory['predicted_trajectories']:
                 final_prediction = self.complete_trajectory['predicted_trajectories'][-1]
                 if final_prediction is not None:
                     plt.plot(final_prediction[:, 0], final_prediction[:, 1], 
-                            'r:', label='Final Prediction', linewidth=1)
+                            'r:', label = 'Final Prediction', linewidth = 1)
             
             plt.xlabel('X Position (m)')
             plt.ylabel('Y Position (m)')
@@ -355,23 +354,23 @@ class SimulationEnvironment:
             # Save as NPZ file (for numerical data)
             np.savez(
                 result_dir / "trajectory_data.npz",
-                robot_states=robot_states,
-                reference_trajectory=self.final_reference,
-                predicted_trajectories=np.array(self.complete_trajectory['predicted_trajectories'])
+                robot_states = robot_states,
+                reference_trajectory = self.final_reference,
+                predicted_trajectories = np.array(self.complete_trajectory['predicted_trajectories'])
             )
             
             # Save as JSON for human-readable format
             with open(result_dir / "trajectory_data.json", 'w') as f:
-                json.dump(trajectory_data, f, indent=2)
+                json.dump(trajectory_data, f, indent = 2)
             
             # Save performance metrics
             self.performance_monitor.plot_performance_metrics(
-                save_path=result_dir / "performance_metrics.png"
+                save_path = result_dir / "performance_metrics.png"
             )
             
             # Generate and save performance report
             self.performance_monitor.generate_report(
-                save_path=result_dir / "performance_report.txt"
+                save_path = result_dir / "performance_report.txt"
             )
             
             # Save simulation summary with proper conversion to lists/floats
@@ -386,7 +385,7 @@ class SimulationEnvironment:
             }
             
             with open(result_dir / "simulation_summary.json", 'w') as f:
-                json.dump(summary, f, indent=2)
+                json.dump(summary, f, indent = 2)
             
             self.logger.info(f"Saved simulation results to {result_dir}")
             
