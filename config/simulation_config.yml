@@ -23,7 +23,7 @@ control_limits:
 
 simulation:
   max_steps: 1000
-  num_points: 200
+  num_points: 300
   completion_threshold: 0.01
   min_iterations: 50
 
