@@ -33,10 +33,10 @@ class RobotState:
 @dataclass
 class MPCParams:
     """MPC parameters"""
-    N: int = 20                                                                         # Prediction horizon
-    dt: float = 0.1                                                                     # Time step
-    Q: np.ndarray = field(default_factory=lambda: np.diag([10.0, 10.0, 1.0]))           # State cost
-    R: np.ndarray = field(default_factory=lambda: np.diag([0.1, 0.1]))                  # Control cost
+    N: int = 20                                                                             # Prediction horizon
+    dt: float = 0.1                                                                         # Time step
+    Q: np.ndarray = field(default_factory = lambda: np.diag([10.0, 10.0, 1.0]))             # State cost
+    R: np.ndarray = field(default_factory = lambda: np.diag([0.1, 0.1]))                    # Control cost
     terminal_weight: float = 50.0
     state_weight: float = 10.0
     control_weight: float = 0.1
@@ -45,8 +45,8 @@ class MPCParams:
     omega_max: float = np.pi/2
     omega_min: float = -np.pi/2
     debug: bool = True
-    safety_distance: float = 1.0                                                        # Minimum distance to keep from obstacles
-    obstacle_weight: float = 10.0                                                       # Weight for obstacle avoidance in cost function
+    safety_distance: float = 1.0                                                            # Minimum distance to keep from obstacles
+    obstacle_weight: float = 10.0                                                           # Weight for obstacle avoidance in cost function
 
 class NonlinearMPC:
     """MPC implementation using CasADi"""
@@ -82,13 +82,13 @@ class NonlinearMPC:
             return state + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
         
         # Define variables for optimization
-        X = ca.SX.sym('X', n_states, N + 1)                                         # states
-        U = ca.SX.sym('U', n_controls, N)                                           # controls
-        P = ca.SX.sym('P', n_states + 2*N)                                          # parameters (initial state + reference trajectory)
+        X = ca.SX.sym('X', n_states, N + 1)                                                 # states
+        U = ca.SX.sym('U', n_controls, N)                                                   # controls
+        P = ca.SX.sym('P', n_states + 2*N)                                                  # parameters (initial state + reference trajectory)
         
         # Initialize objective and constraints
         obj = 0
-        g = []                                                                      # constraints vector
+        g = []                                                                              # constraints vector
         
         # Initial constraints
         g.append(X[:, 0] - P[:n_states])
@@ -109,8 +109,8 @@ class NonlinearMPC:
             g.append(X[:, k+1] - state_next)
             
             # Control constraints
-            g.append(U[0, k])                                                   # velocity bounds
-            g.append(U[1, k])                                                   # angular velocity bounds
+            g.append(U[0, k])                                                               # velocity bounds
+            g.append(U[1, k])                                                               # angular velocity bounds
         
         # Terminal cost
         final_error = X[:2, -1] - P[n_states + 2*(N-1):n_states + 2*N]
@@ -489,7 +489,7 @@ class ConvergenceAnalyzer:
                 'control_effort': np.sum(np.square(controls))
             },
             'state_stats': {
-                'position_error_mean': np.mean(np.linalg.norm(states[:, :2], axis=1)),
+                'position_error_mean': np.mean(np.linalg.norm(states[:, :2], axis = 1)),
                 'orientation_error_mean': np.mean(np.abs(states[:, 2])),
                 'final_position_error': np.linalg.norm(states[-1, :2]),
                 'settling_time': self._compute_settling_time(errors)
@@ -505,7 +505,7 @@ class ConvergenceAnalyzer:
             return 0.0
         
         # Use log of moving average
-        ma = np.convolve(errors, np.ones(window)/window, mode='valid')
+        ma = np.convolve(errors, np.ones(window)/window, mode = 'valid')
         ma = np.log(ma + 1e-6)  # Add small constant for numerical stability
         
         # Fit line to log data
@@ -601,16 +601,16 @@ class PerformanceMonitor:
         self.metrics['tracking_errors'].append(tracking_error)
         self.metrics['control_inputs'].append(control_input)
         self.metrics['predicted_trajectories'].append(predicted_trajectory)
-        self.metrics['actual_states'].append(actual_state)                              # Store RobotState object
-        self.metrics['actual_trajectories'].append(actual_state.to_array())             # Store array
+        self.metrics['actual_states'].append(actual_state)                                      # Store RobotState object
+        self.metrics['actual_trajectories'].append(actual_state.to_array())                     # Store array
         self.metrics['reference_trajectories'].append(reference_point)
         self.metrics['optimization_status'].append(optimization_status)
         
         # Calculate constraint violations
         control_violation = max(
             0,
-            abs(control_input[0]) - 2.0,                                            # v_max violation
-            abs(control_input[1]) - np.pi/2                                         # omega_max violation
+            abs(control_input[0]) - 2.0,                                                    # v_max violation
+            abs(control_input[1]) - np.pi/2                                                 # omega_max violation
         )
         self.metrics['constraint_violations'].append(control_violation)
     
@@ -630,7 +630,7 @@ class PerformanceMonitor:
     
     def plot_performance_metrics(self, save_path: Optional[Path] = None):
         """Generate comprehensive performance plots"""
-        if not self.metrics['solve_times']:                                     # Check if we have data
+        if not self.metrics['solve_times']:                                                     # Check if we have data
             self.logger.warning("No Performance data to plot")
             return
             
@@ -652,7 +652,7 @@ class PerformanceMonitor:
         
         # 2. Solve Times
         ax2 = fig.add_subplot(gs[0, 1])
-        solve_times = np.array(self.metrics['solve_times']) * 1000              # Convert to ms
+        solve_times = np.array(self.metrics['solve_times']) * 1000                      # Convert to ms
         ax2.plot(times, solve_times, 'g-', label = 'Solve Time')
         ax2.axhline(y = np.mean(solve_times), color = 'r', linestyle = '--', 
                     label = f'Mean: {np.mean(solve_times):.2f}ms')
@@ -707,7 +707,7 @@ class PerformanceMonitor:
     
     def plot_convergence_metrics(self, save_path: Optional[Path] = None):
         """Generate convergence analysis plots"""
-        fig = plt.figure(figsize=(15, 12))
+        fig = plt.figure(figsize = (15, 12))
         gs = plt.GridSpec(3, 2)
         
         # 1. State Convergence
@@ -715,15 +715,15 @@ class PerformanceMonitor:
         state_history = np.array([state.to_array() for state in self.metrics['actual_states']])
         times = range(len(state_history))
         
-        ax1.plot(times, state_history[:, 0], 'r-', label='x position')
-        ax1.plot(times, state_history[:, 1], 'g-', label='y position')
-        ax1.plot(times, state_history[:, 2], 'b-', label='θ orientation')
+        ax1.plot(times, state_history[:, 0], 'r-', label = 'x position')
+        ax1.plot(times, state_history[:, 1], 'g-', label = 'y position')
+        ax1.plot(times, state_history[:, 2], 'b-', label = 'θ orientation')
         
         # Add moving average
         window = 10
         for i in range(3):
-            ma = np.convolve(state_history[:, i], np.ones(window)/window, mode='valid')
-            ax1.plot(times[window-1:], ma, '--', alpha=0.5)
+            ma = np.convolve(state_history[:, i], np.ones(window)/window, mode = 'valid')
+            ax1.plot(times[window-1:], ma, '--', alpha = 0.5)
         
         ax1.set_title('State Convergence')
         ax1.grid(True)
@@ -732,14 +732,14 @@ class PerformanceMonitor:
         # 2. Control Input Convergence
         ax2 = fig.add_subplot(gs[1, :])
         controls = np.array(self.metrics['control_inputs'])
-        ax2.plot(times, controls[:, 0], 'b-', label='v')
-        ax2.plot(times, controls[:, 1], 'r-', label='ω')
+        ax2.plot(times, controls[:, 0], 'b-', label = 'v')
+        ax2.plot(times, controls[:, 1], 'r-', label = 'ω')
         
         # Add control limits
-        ax2.axhline(y=2.0, color='k', linestyle='--', alpha=0.3)
-        ax2.axhline(y=-2.0, color='k', linestyle='--', alpha=0.3)
-        ax2.axhline(y=np.pi/2, color='k', linestyle='--', alpha=0.3)
-        ax2.axhline(y=-np.pi/2, color='k', linestyle='--', alpha=0.3)
+        ax2.axhline(y = 2.0, color = 'k', linestyle = '--', alpha = 0.3)
+        ax2.axhline(y = -2.0, color = 'k', linestyle = '--', alpha = 0.3)
+        ax2.axhline(y = np.pi/2, color = 'k', linestyle = '--', alpha = 0.3)
+        ax2.axhline(y = -np.pi/2, color = 'k', linestyle = '--', alpha = 0.3)
         
         ax2.set_title('Control Input Convergence')
         ax2.grid(True)
@@ -748,10 +748,10 @@ class PerformanceMonitor:
         # 3. Error Analysis
         ax3 = fig.add_subplot(gs[2, 0])
         errors = np.array(self.metrics['tracking_errors'])
-        ax3.plot(times, errors, 'b-', label='Tracking Error')
+        ax3.plot(times, errors, 'b-', label = 'Tracking Error')
         ax3.plot(times[window-1:], 
-                np.convolve(errors, np.ones(window)/window, mode='valid'),
-                'r--', label=f'Moving Avg (n={window})')
+                np.convolve(errors, np.ones(window)/window, mode = 'valid'),
+                'r--', label = f'Moving Avg (n = {window})')
         ax3.set_title('Tracking Error Convergence')
         ax3.set_yscale('log')
         ax3.grid(True)
@@ -759,11 +759,11 @@ class PerformanceMonitor:
 
         # 4. Statistical Distribution
         ax4 = fig.add_subplot(gs[2, 1])
-        ax4.hist(errors, bins=30, density=True, alpha=0.7)
-        ax4.axvline(np.mean(errors), color='r', linestyle='--', 
-                    label=f'Mean: {np.mean(errors):.4f}')
-        ax4.axvline(np.median(errors), color='g', linestyle='--', 
-                    label=f'Median: {np.median(errors):.4f}')
+        ax4.hist(errors, bins = 30, density = True, alpha = 0.7)
+        ax4.axvline(np.mean(errors), color = 'r', linestyle = '--', 
+                    label = f'Mean: {np.mean(errors):.4f}')
+        ax4.axvline(np.median(errors), color = 'g', linestyle = '--', 
+                    label = f'Median: {np.median(errors):.4f}')
         ax4.set_title('Error Distribution')
         ax4.grid(True)
         ax4.legend()
@@ -779,7 +779,7 @@ class PerformanceMonitor:
         
         # Calculate convergence metrics from existing data
         convergence_metrics = {
-            'position_variation': np.std([state[:2] for state in self.metrics['actual_trajectories']], axis=0).mean(),
+            'position_variation': np.std([state[:2] for state in self.metrics['actual_trajectories']], axis = 0).mean(),
             'orientation_variation': np.std([state[2] for state in self.metrics['actual_trajectories']]),
             'velocity_variation': np.std([control[0] for control in self.metrics['control_inputs']]),
             'angular_velocity_variation': np.std([control[1] for control in self.metrics['control_inputs']]),
@@ -822,8 +822,8 @@ class PerformanceMonitor:
   
 class ConvergenceMonitor:
     """Monitors convergence of MPC optimization"""
-    def __init__(self, position_tolerance=1e-3, orientation_tolerance=1e-2, 
-                 control_tolerance=1e-3, window_size=5):
+    def __init__(self, position_tolerance = 1e-3, orientation_tolerance = 1e-2, 
+                 control_tolerance = 1e-3, window_size = 5):
         self.position_tolerance = position_tolerance
         self.orientation_tolerance = orientation_tolerance
         self.control_tolerance = control_tolerance
@@ -862,8 +862,8 @@ class ConvergenceMonitor:
         # Check state convergence
         state_variations = np.std(self.state_history, axis=0)
         self.state_converged = (
-            np.all(state_variations[:2] < self.position_tolerance) and  # position
-            state_variations[2] < self.orientation_tolerance            # orientation
+            np.all(state_variations[:2] < self.position_tolerance) and                              # position
+            state_variations[2] < self.orientation_tolerance                                        # orientation
         )
         
         # Check control convergence
@@ -893,8 +893,8 @@ class ConvergenceMonitor:
     def _log_convergence_status(self):
         """Log convergence information"""
         if len(self.state_history) == self.window_size:
-            state_vars = np.std(self.state_history, axis=0)
-            control_vars = np.std(self.control_history, axis=0)
+            state_vars = np.std(self.state_history, axis = 0)
+            control_vars = np.std(self.control_history, axis = 0)
             error_var = np.std(self.error_history)
             
             self.logger.debug(
@@ -910,8 +910,8 @@ class ConvergenceMonitor:
         if len(self.state_history) < 2:
             return {}
             
-        state_vars = np.std(self.state_history, axis=0)
-        control_vars = np.std(self.control_history, axis=0)
+        state_vars = np.std(self.state_history, axis = 0)
+        control_vars = np.std(self.control_history, axis = 0)
         
         return {
             'position_variation': float(np.mean(state_vars[:2])),

@@ -35,10 +35,10 @@ debug:
   log_level: DEBUG
 
 convergence:
-  position_tolerance: 0.001             # meters
-  orientation_tolerance: 0.01           # radians
-  control_tolerance: 0.001              # control units
-  window_size: 5                        # number of samples for convergence check
+  position_tolerance: 0.001                   # meters
+  orientation_tolerance: 0.01                 # radians
+  control_tolerance: 0.001                    # control units
+  window_size: 5                              # number of samples for convergence check
   min_convergence_steps: 20
   analysis:
     error_threshold: 0.05
@@ -51,5 +51,5 @@ obstacles:
       radius: 0.5
     - position: [10.0, -1.0]
       radius: 0.5
-  safety_distance: 1.0  # Minimum distance to keep from obstacles
-  weight: 10.0         # Weight for obstacle avoidance in cost function
+  safety_distance: 1.0                      # Minimum distance to keep from obstacles
+  weight: 10.0                              # Weight for obstacle avoidance in cost function
