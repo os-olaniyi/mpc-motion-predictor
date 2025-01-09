@@ -6,13 +6,13 @@ initial_state:
   theta: 0.0
 
 mpc:
-  horizon: 20
+  horizon: 50   #Originallyset at 20
   time_step: 0.1
   state_weights: [10.0, 10.0, 1.0]
   control_weights: [0.1, 0.1]
   terminal_weight: 50.0
-  state_weight: 10.0    # Added this
-  control_weight: 0.1   # Added this
+  state_weight: 10.0   
+  control_weight: 0.1  
   obstacle_weight: 10.0
 
 control_limits:
@@ -22,8 +22,8 @@ control_limits:
   omega_max: 1.57
 
 simulation:
-  max_steps: 1000
-  num_points: 200
+  max_steps:  1000
+  num_points: 300
   completion_threshold: 0.01
   min_iterations: 50
 
@@ -31,5 +31,25 @@ visualization:
   update_interval: 5
 
 debug:
-  enabled: true       # Added this
+  enabled: true  
   log_level: DEBUG
+
+convergence:
+  position_tolerance: 0.001             # meters
+  orientation_tolerance: 0.01           # radians
+  control_tolerance: 0.001              # control units
+  window_size: 5                        # number of samples for convergence check
+  min_convergence_steps: 20
+  analysis:
+    error_threshold: 0.05
+    settling_window: 10
+    convergence_rate_threshold: 0.1
+
+obstacles:
+  static:
+    - position: [5.0, 1.0]
+      radius: 0.5
+    - position: [10.0, -1.0]
+      radius: 0.5
+  safety_distance: 1.0  # Minimum distance to keep from obstacles
+  weight: 10.0         # Weight for obstacle avoidance in cost function
