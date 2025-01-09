@@ -2,16 +2,16 @@ from pathlib import Path
 import casadi as ca
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
 import logging
 import time
 
-# Configure logging
+# Logging Configuration
 logging.basicConfig(
-    level=logging.DEBUG,  # Changed to DEBUG for more detailed output
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level = logging.DEBUG,
+    format = '%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
@@ -27,15 +27,15 @@ class RobotState:
     
     @classmethod
     def from_array(cls, arr: np.ndarray) -> 'RobotState':
-        return cls(x=float(arr[0]), y=float(arr[1]), theta=float(arr[2]))
+        return cls(x = float(arr[0]), y = float(arr[1]), theta = float(arr[2]))
 
 @dataclass
 class MPCParams:
     """MPC parameters"""
-    N: int = 20               # Prediction horizon
-    dt: float = 0.1          # Time step
-    Q: np.ndarray = field(default_factory=lambda: np.diag([10.0, 10.0, 1.0]))  # State cost
-    R: np.ndarray = field(default_factory=lambda: np.diag([0.1, 0.1]))         # Control cost
+    N: int = 20                                                                         # Prediction horizon
+    dt: float = 0.1                                                                     # Time step
+    Q: np.ndarray = field(default_factory=lambda: np.diag([10.0, 10.0, 1.0]))           # State cost
+    R: np.ndarray = field(default_factory=lambda: np.diag([0.1, 0.1]))                  # Control cost
     terminal_weight: float = 50.0
     state_weight: float = 10.0
     control_weight: float = 0.1
@@ -53,7 +53,7 @@ class NonlinearMPC:
         self.logger = logging.getLogger(__name__)
         
     def _setup_solver(self):
-        """Setup CasADi solver with improved parameters"""
+        """Setup CasADi solver."""
         N = self.params.N
         dt = self.params.dt
         
@@ -79,13 +79,13 @@ class NonlinearMPC:
             return state + dt/6 * (k1 + 2*k2 + 2*k3 + k4)
         
         # Define variables for optimization
-        X = ca.SX.sym('X', n_states, N + 1)  # states
-        U = ca.SX.sym('U', n_controls, N)    # controls
-        P = ca.SX.sym('P', n_states + 2*N)   # parameters (initial state + reference trajectory)
+        X = ca.SX.sym('X', n_states, N + 1)                                         # states
+        U = ca.SX.sym('U', n_controls, N)                                           # controls
+        P = ca.SX.sym('P', n_states + 2*N)                                          # parameters (initial state + reference trajectory)
         
         # Initialize objective and constraints
         obj = 0
-        g = []  # constraints vector
+        g = []                                                                      # constraints vector
         
         # Initial constraints
         g.append(X[:, 0] - P[:n_states])
@@ -106,8 +106,8 @@ class NonlinearMPC:
             g.append(X[:, k+1] - state_next)
             
             # Control constraints
-            g.append(U[0, k])  # velocity bounds
-            g.append(U[1, k])  # angular velocity bounds
+            g.append(U[0, k])                                                   # velocity bounds
+            g.append(U[1, k])                                                   # angular velocity bounds
         
         # Terminal cost
         final_error = X[:2, -1] - P[n_states + 2*(N-1):n_states + 2*N]
@@ -203,10 +203,10 @@ class NonlinearMPC:
             # Solve the optimization problem
             t_start = time.time()
             sol = self.solver(
-                x0=x0,
-                lbg=lbg,
-                ubg=ubg,
-                p=p
+                x0 = x0,
+                lbg = lbg,
+                ubg = ubg,
+                p = p
             )
             solve_time = time.time() - t_start
             
@@ -244,7 +244,7 @@ def generate_reference_trajectory(num_points: int = 200) -> np.ndarray:
 class Visualizer:
     """Handles visualization of robot state and trajectory"""
     def __init__(self):
-        self.fig, self.ax = plt.subplots(figsize=(10, 8))
+        self.fig, self.ax = plt.subplots(figsize = (10, 8))
         
     def update(self, 
               robot_path: List[RobotState],
@@ -258,22 +258,22 @@ class Visualizer:
         
         # Plot reference trajectory
         self.ax.plot(reference_trajectory[:, 0], reference_trajectory[:, 1], 
-                    'g--', label='Reference Path', linewidth=2)
+                    'g--', label = 'Reference Path', linewidth = 2)
         
         # Plot robot path
         self.ax.plot(robot_positions[:, 0], robot_positions[:, 1], 
-                    'b-', label='Robot Path', linewidth=2)
+                    'b-', label = 'Robot Path', linewidth = 2)
         
         # Plot current robot position
         if len(robot_positions) > 0:
             current_pos = robot_positions[-1]
-            robot_circle = Circle(current_pos, 0.2, color='blue', alpha=0.7)
+            robot_circle = Circle(current_pos, 0.2, color = 'blue', alpha = 0.7)
             self.ax.add_patch(robot_circle)
         
         # Plot predicted trajectory if available
         if predicted_trajectory is not None:
             self.ax.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1],
-                        'r:', label='Predicted Path', linewidth=1)
+                        'r:', label = 'Predicted Path', linewidth = 1)
         
         self.ax.set_xlabel('X Position (m)')
         self.ax.set_ylabel('Y Position (m)')
@@ -287,7 +287,7 @@ class Visualizer:
 class EnhancedVisualizer:
     """Enhanced visualization with real-time metrics"""
     def __init__(self):
-        self.fig = plt.figure(figsize=(15, 10))
+        self.fig = plt.figure(figsize = (15, 10))
         self.gs = plt.GridSpec(2, 2)
         
         # Trajectory plot
@@ -302,7 +302,7 @@ class EnhancedVisualizer:
         self.v_line = None
         self.omega_line = None
         
-        plt.ion()  # Enable interactive mode
+        plt.ion()                       # Enable interactive mode
     
     def update(self,
               robot_path: List[RobotState],
@@ -316,9 +316,9 @@ class EnhancedVisualizer:
         # Plot reference and actual trajectories
         robot_positions = np.array([[state.x, state.y] for state in robot_path])
         self.ax_traj.plot(reference_trajectory[:, 0], reference_trajectory[:, 1],
-                         'g--', label='Reference', linewidth=2)
+                         'g--', label = 'Reference', linewidth = 2)
         self.ax_traj.plot(robot_positions[:, 0], robot_positions[:, 1],
-                         'b-', label='Actual', linewidth=2)
+                         'b-', label = 'Actual', linewidth = 2)
         
         # Plot current position and orientation
         if len(robot_positions) > 0:
@@ -326,7 +326,7 @@ class EnhancedVisualizer:
             current_state = robot_path[-1]
             
             # Robot circle
-            robot = plt.Circle(current_pos, 0.2, color='blue', alpha=0.7)
+            robot = plt.Circle(current_pos, 0.2, color = 'blue', alpha = 0.7)
             self.ax_traj.add_patch(robot)
             
             # Orientation arrow
@@ -334,12 +334,12 @@ class EnhancedVisualizer:
             dx = arrow_length * np.cos(current_state.theta)
             dy = arrow_length * np.sin(current_state.theta)
             self.ax_traj.arrow(current_pos[0], current_pos[1], dx, dy,
-                             head_width=0.1, head_length=0.2, fc='blue', ec='blue')
+                             head_width=0.1, head_length=0.2, fc = 'blue', ec = 'blue')
         
         # Plot predicted trajectory
         if predicted_trajectory is not None:
             self.ax_traj.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1],
-                            'r:', label='Predicted', linewidth=1)
+                            'r:', label = 'Predicted', linewidth = 1)
         
         # Update trajectory plot settings
         self.ax_traj.set_xlabel('X Position (m)')
@@ -354,7 +354,7 @@ class EnhancedVisualizer:
             # Update error plot
             self.ax_error.clear()
             errors = performance_metrics['tracking_errors']
-            self.ax_error.plot(errors, 'b-', label='Tracking Error')
+            self.ax_error.plot(errors, 'b-', label = 'Tracking Error')
             self.ax_error.set_title('Tracking Error')
             self.ax_error.set_ylabel('Error (m)')
             self.ax_error.grid(True)
@@ -363,8 +363,8 @@ class EnhancedVisualizer:
             self.ax_control.clear()
             controls = np.array(performance_metrics['control_inputs'])
             if len(controls) > 0:
-                self.ax_control.plot(controls[:, 0], 'b-', label='v')
-                self.ax_control.plot(controls[:, 1], 'r-', label='ω')
+                self.ax_control.plot(controls[:, 0], 'b-', label = 'v')
+                self.ax_control.plot(controls[:, 1], 'r-', label = 'ω')
                 self.ax_control.set_title('Control Inputs')
                 self.ax_control.set_ylabel('Velocity')
                 self.ax_control.grid(True)
@@ -373,9 +373,9 @@ class EnhancedVisualizer:
         plt.tight_layout()
         plt.pause(0.01)
     
-    def plot_trajectory(self, robot_path, reference_trajectory, predicted_trajectory=None):
+    def plot_trajectory(self, robot_path, reference_trajectory, predicted_trajectory = None):
         """Plot the complete trajectory"""
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize = (12, 8))
         
         # Convert robot path if needed
         if isinstance(robot_path[0], RobotState):
@@ -385,23 +385,23 @@ class EnhancedVisualizer:
         
         # Plot reference trajectory
         plt.plot(reference_trajectory[:, 0], reference_trajectory[:, 1],
-                'g--', label='Reference', linewidth=2, alpha=0.7)
+                'g--', label = 'Reference', linewidth = 2, alpha = 0.7)
         
         # Plot actual trajectory if we have points
         if len(robot_positions) > 0:
             plt.plot(robot_positions[:, 0], robot_positions[:, 1],
-                    'b-', label='Actual', linewidth=2)
+                    'b-', label = 'Actual', linewidth = 2)
             
             # Plot start and end points
             plt.scatter(robot_positions[0, 0], robot_positions[0, 1], 
-                    color='green', marker='o', s=100, label='Start')
+                    color = 'green', marker = 'o', s = 100, label = 'Start')
             plt.scatter(robot_positions[-1, 0], robot_positions[-1, 1], 
-                    color='red', marker='x', s=100, label='End')
+                    color = 'red', marker = 'x', s = 100, label = 'End')
         
         # Plot predicted trajectory if available
         if predicted_trajectory is not None and len(predicted_trajectory) > 0:
             plt.plot(predicted_trajectory[:, 0], predicted_trajectory[:, 1],
-                    'r:', label='Predicted', linewidth=1, alpha=0.7)
+                    'r:', label = 'Predicted', linewidth = 1, alpha = 0.7)
         
         plt.xlabel('X Position (m)')
         plt.ylabel('Y Position (m)')
@@ -409,6 +409,119 @@ class EnhancedVisualizer:
         plt.legend()
         plt.grid(True)
         plt.axis('equal')
+
+class ConvergenceAnalyzer:
+    """Analyzes convergence behavior of the MPC controller"""
+    def __init__(self):
+        self.metrics = {}
+    
+    def analyze_convergence(self, performance_monitor) -> Dict[str, Any]:
+        """Perform statistical analysis of convergence"""
+        # Get data
+        errors = np.array(performance_monitor.metrics['tracking_errors'])
+        controls = np.array(performance_monitor.metrics['control_inputs'])
+        states = np.array([state.to_array() 
+                          for state in performance_monitor.metrics['actual_states']])
+        
+        # Compute statistics
+        self.metrics = {
+            'error_stats': {
+                'mean': np.mean(errors),
+                'std': np.std(errors),
+                'median': np.median(errors),
+                'max': np.max(errors),
+                'min': np.min(errors),
+                'convergence_rate': self._compute_convergence_rate(errors)
+            },
+            'control_stats': {
+                'v_mean': np.mean(controls[:, 0]),
+                'v_std': np.std(controls[:, 0]),
+                'w_mean': np.mean(controls[:, 1]),
+                'w_std': np.std(controls[:, 1]),
+                'control_effort': np.sum(np.square(controls))
+            },
+            'state_stats': {
+                'position_error_mean': np.mean(np.linalg.norm(states[:, :2], axis=1)),
+                'orientation_error_mean': np.mean(np.abs(states[:, 2])),
+                'final_position_error': np.linalg.norm(states[-1, :2]),
+                'settling_time': self._compute_settling_time(errors)
+            }
+        }
+        
+        return self.metrics
+    
+    def _compute_convergence_rate(self, errors: np.ndarray, 
+                                window: int = 10) -> float:
+        """Compute rate of convergence using exponential fit"""
+        if len(errors) < window:
+            return 0.0
+        
+        # Use log of moving average
+        ma = np.convolve(errors, np.ones(window)/window, mode='valid')
+        ma = np.log(ma + 1e-6)  # Add small constant for numerical stability
+        
+        # Fit line to log data
+        times = np.arange(len(ma))
+        coeffs = np.polyfit(times, ma, 1)
+        return -coeffs[0]  # Return negative slope as convergence rate
+    
+    def _compute_settling_time(self, errors: np.ndarray, 
+                             threshold: float = 0.05) -> int:
+        """Compute time to reach within threshold of final value"""
+        final_value = errors[-1]
+        threshold_value = final_value * (1 + threshold)
+        
+        # Find first index where error is consistently below threshold
+        window = 10  # Number of consecutive points needed
+        for i in range(len(errors) - window):
+            if all(errors[i:i+window] < threshold_value):
+                return i
+        
+        return len(errors)  # If never settles
+    
+class ConvergenceTuner:
+    """Helps tune convergence parameters"""
+    def __init__(self, nominal_params: Dict[str, float]):
+        self.nominal_params = nominal_params
+        self.results = {}
+    
+    def suggest_parameters(self, 
+                         performance_metrics: Dict[str, float]) -> Dict[str, float]:
+        """Suggest parameter adjustments based on performance"""
+        suggestions = self.nominal_params.copy()
+        
+        # Analyze convergence behavior
+        if performance_metrics['error_stats']['convergence_rate'] < 0.1:
+            # Slow convergence - increase weights
+            suggestions['state_weight'] *= 1.5
+            suggestions['terminal_weight'] *= 1.2
+        elif performance_metrics['control_stats']['control_effort'] > 1000:
+            # Excessive control - reduce weights
+            suggestions['control_weight'] *= 1.5
+        
+        # Adjust tolerances based on achieved accuracy
+        final_error = performance_metrics['state_stats']['final_position_error']
+        suggestions['position_tolerance'] = max(final_error * 0.1, 1e-4)
+        
+        return suggestions
+    
+    def evaluate_parameters(self, 
+                          params: Dict[str, float], 
+                          metrics: Dict[str, float]) -> float:
+        """Compute parameter set performance score"""
+        score = 0.0
+        
+        # Convergence speed
+        score += metrics['error_stats']['convergence_rate'] * 10
+        
+        # Final accuracy
+        score -= metrics['state_stats']['final_position_error']
+        
+        # Control effort penalty
+        score -= metrics['control_stats']['control_effort'] * 0.001
+        
+        return score
+    
         
 
 class PerformanceMonitor:
@@ -419,11 +532,11 @@ class PerformanceMonitor:
             'tracking_errors': [],
             'control_inputs': [],
             'predicted_trajectories': [],
-            'actual_states': [],          # Add this
-            'actual_trajectories': [],    # Keep this
+            'actual_states': [],       
+            'actual_trajectories': [],   
             'reference_trajectories': [],
             'optimization_status': [],
-            'constraint_violations': []    # Keep this
+            'constraint_violations': []  
         }
         self.logger = logging.getLogger(__name__)
 
@@ -440,16 +553,16 @@ class PerformanceMonitor:
         self.metrics['tracking_errors'].append(tracking_error)
         self.metrics['control_inputs'].append(control_input)
         self.metrics['predicted_trajectories'].append(predicted_trajectory)
-        self.metrics['actual_states'].append(actual_state)  # Store RobotState object
-        self.metrics['actual_trajectories'].append(actual_state.to_array())  # Store array
+        self.metrics['actual_states'].append(actual_state)                              # Store RobotState object
+        self.metrics['actual_trajectories'].append(actual_state.to_array())             # Store array
         self.metrics['reference_trajectories'].append(reference_point)
         self.metrics['optimization_status'].append(optimization_status)
         
         # Calculate constraint violations
         control_violation = max(
             0,
-            abs(control_input[0]) - 2.0,  # v_max violation
-            abs(control_input[1]) - np.pi/2  # omega_max violation
+            abs(control_input[0]) - 2.0,                                            # v_max violation
+            abs(control_input[1]) - np.pi/2                                         # omega_max violation
         )
         self.metrics['constraint_violations'].append(control_violation)
     
@@ -469,21 +582,21 @@ class PerformanceMonitor:
     
     def plot_performance_metrics(self, save_path: Optional[Path] = None):
         """Generate comprehensive performance plots"""
-        if not self.metrics['solve_times']:     # Check if we have data
+        if not self.metrics['solve_times']:                                     # Check if we have data
             self.logger.warning("No Performance data to plot")
             return
             
         # Create figure with subplots
-        fig = plt.figure(figsize=(15, 12))
-        gs = plt.GridSpec(4, 2)  # Added one more row for state evolution
+        fig = plt.figure(figsize = (15, 12))
+        gs = plt.GridSpec(4, 2) 
         
         # 1. Tracking Error
         ax1 = fig.add_subplot(gs[0, 0])
         errors = np.array(self.metrics['tracking_errors'])
         times = np.array(range(len(errors)))
-        ax1.plot(times, errors, 'b-', label='Tracking Error')
-        ax1.axhline(y=np.mean(errors), color='r', linestyle='--', 
-                    label=f'Mean: {np.mean(errors):.2f}m')
+        ax1.plot(times, errors, 'b-', label = 'Tracking Error')
+        ax1.axhline(y = np.mean(errors), color = 'r', linestyle = '--', 
+                    label = f'Mean: {np.mean(errors):.2f}m')
         ax1.set_title('Tracking Error Over Time')
         ax1.set_ylabel('Error (m)')
         ax1.grid(True)
@@ -491,10 +604,10 @@ class PerformanceMonitor:
         
         # 2. Solve Times
         ax2 = fig.add_subplot(gs[0, 1])
-        solve_times = np.array(self.metrics['solve_times']) * 1000  # Convert to ms
-        ax2.plot(times, solve_times, 'g-', label='Solve Time')
-        ax2.axhline(y=np.mean(solve_times), color='r', linestyle='--', 
-                    label=f'Mean: {np.mean(solve_times):.2f}ms')
+        solve_times = np.array(self.metrics['solve_times']) * 1000              # Convert to ms
+        ax2.plot(times, solve_times, 'g-', label = 'Solve Time')
+        ax2.axhline(y = np.mean(solve_times), color = 'r', linestyle = '--', 
+                    label = f'Mean: {np.mean(solve_times):.2f}ms')
         ax2.set_title('Solver Performance')
         ax2.set_ylabel('Time (ms)')
         ax2.grid(True)
@@ -504,8 +617,8 @@ class PerformanceMonitor:
         ax3 = fig.add_subplot(gs[1, :])
         controls = np.array(self.metrics['control_inputs'])
         if len(controls) > 0:
-            ax3.plot(times, controls[:, 0], 'b-', label='Linear Velocity (v)')
-            ax3.plot(times, controls[:, 1], 'r-', label='Angular Velocity (ω)')
+            ax3.plot(times, controls[:, 0], 'b-', label = 'Linear Velocity (v)')
+            ax3.plot(times, controls[:, 1], 'r-', label = 'Angular Velocity (ω)')
             ax3.set_title('Control Inputs')
             ax3.set_ylabel('Velocity')
             ax3.grid(True)
@@ -515,9 +628,9 @@ class PerformanceMonitor:
         ax4 = fig.add_subplot(gs[2, :])
         if self.metrics['actual_states']:
             states = np.array([state.to_array() for state in self.metrics['actual_states']])
-            ax4.plot(times, states[:, 0], 'r-', label='x position')
-            ax4.plot(times, states[:, 1], 'g-', label='y position')
-            ax4.plot(times, states[:, 2], 'b-', label='θ orientation')
+            ax4.plot(times, states[:, 0], 'r-', label = 'x position')
+            ax4.plot(times, states[:, 1], 'g-', label = 'y position')
+            ax4.plot(times, states[:, 2], 'b-', label = 'θ orientation')
             ax4.set_title('State Evolution')
             ax4.set_ylabel('State Values')
             ax4.grid(True)
@@ -530,9 +643,9 @@ class PerformanceMonitor:
             predicted = np.array(self.metrics['predicted_trajectories'])
             actual_states = np.array([state.to_array() for state in self.metrics['actual_states']])
             pred_errors = np.linalg.norm(
-                predicted[:, 0, :2] - actual_states[:, :2], axis=1
+                predicted[:, 0, :2] - actual_states[:, :2], axis = 1
             )
-            ax5.plot(times, pred_errors, 'b-', label='Prediction Error')
+            ax5.plot(times, pred_errors, 'b-', label = 'Prediction Error')
             ax5.set_title('Prediction Accuracy')
             ax5.set_xlabel('Time Step')
             ax5.set_ylabel('Error (m)')
@@ -544,14 +657,100 @@ class PerformanceMonitor:
             plt.savefig(save_path)
         plt.close()
     
+    def plot_convergence_metrics(self, save_path: Optional[Path] = None):
+        """Generate convergence analysis plots"""
+        fig = plt.figure(figsize=(15, 12))
+        gs = plt.GridSpec(3, 2)
+        
+        # 1. State Convergence
+        ax1 = fig.add_subplot(gs[0, :])
+        state_history = np.array([state.to_array() for state in self.metrics['actual_states']])
+        times = range(len(state_history))
+        
+        ax1.plot(times, state_history[:, 0], 'r-', label='x position')
+        ax1.plot(times, state_history[:, 1], 'g-', label='y position')
+        ax1.plot(times, state_history[:, 2], 'b-', label='θ orientation')
+        
+        # Add moving average
+        window = 10
+        for i in range(3):
+            ma = np.convolve(state_history[:, i], np.ones(window)/window, mode='valid')
+            ax1.plot(times[window-1:], ma, '--', alpha=0.5)
+        
+        ax1.set_title('State Convergence')
+        ax1.grid(True)
+        ax1.legend()
+
+        # 2. Control Input Convergence
+        ax2 = fig.add_subplot(gs[1, :])
+        controls = np.array(self.metrics['control_inputs'])
+        ax2.plot(times, controls[:, 0], 'b-', label='v')
+        ax2.plot(times, controls[:, 1], 'r-', label='ω')
+        
+        # Add control limits
+        ax2.axhline(y=2.0, color='k', linestyle='--', alpha=0.3)
+        ax2.axhline(y=-2.0, color='k', linestyle='--', alpha=0.3)
+        ax2.axhline(y=np.pi/2, color='k', linestyle='--', alpha=0.3)
+        ax2.axhline(y=-np.pi/2, color='k', linestyle='--', alpha=0.3)
+        
+        ax2.set_title('Control Input Convergence')
+        ax2.grid(True)
+        ax2.legend()
+
+        # 3. Error Analysis
+        ax3 = fig.add_subplot(gs[2, 0])
+        errors = np.array(self.metrics['tracking_errors'])
+        ax3.plot(times, errors, 'b-', label='Tracking Error')
+        ax3.plot(times[window-1:], 
+                np.convolve(errors, np.ones(window)/window, mode='valid'),
+                'r--', label=f'Moving Avg (n={window})')
+        ax3.set_title('Tracking Error Convergence')
+        ax3.set_yscale('log')
+        ax3.grid(True)
+        ax3.legend()
+
+        # 4. Statistical Distribution
+        ax4 = fig.add_subplot(gs[2, 1])
+        ax4.hist(errors, bins=30, density=True, alpha=0.7)
+        ax4.axvline(np.mean(errors), color='r', linestyle='--', 
+                    label=f'Mean: {np.mean(errors):.4f}')
+        ax4.axvline(np.median(errors), color='g', linestyle='--', 
+                    label=f'Median: {np.median(errors):.4f}')
+        ax4.set_title('Error Distribution')
+        ax4.grid(True)
+        ax4.legend()
+
+        plt.tight_layout()
+        if save_path:
+            plt.savefig(save_path)
+        plt.close()
+    
     def generate_report(self, save_path: Optional[Path] = None):
         """Generate a detailed performance report"""
         stats = self.get_statistics()
+        
+        # Calculate convergence metrics from existing data
+        convergence_metrics = {
+            'position_variation': np.std([state[:2] for state in self.metrics['actual_trajectories']], axis=0).mean(),
+            'orientation_variation': np.std([state[2] for state in self.metrics['actual_trajectories']]),
+            'velocity_variation': np.std([control[0] for control in self.metrics['control_inputs']]),
+            'angular_velocity_variation': np.std([control[1] for control in self.metrics['control_inputs']]),
+            'mean_tracking_error': np.mean(self.metrics['tracking_errors'])
+        }
+        
         report = [
             "MPC Performance Report",
             "======================",
             f"Total Iterations: {len(self.metrics['solve_times'])}",
             f"Success Rate: {stats['success_rate']*100:.2f}%",
+            "",
+            "Convergence Metrics",
+            "------------------",
+            f"Position Variation: {convergence_metrics['position_variation']:.6f} m",
+            f"Orientation Variation: {convergence_metrics['orientation_variation']:.6f} rad",
+            f"Velocity Variation: {convergence_metrics['velocity_variation']:.6f} m/s",
+            f"Angular Velocity Variation: {convergence_metrics['angular_velocity_variation']:.6f} rad/s",
+            f"Mean Tracking Error: {convergence_metrics['mean_tracking_error']:.6f} m",
             "",
             "Timing Statistics",
             "-----------------",
@@ -571,3 +770,106 @@ class PerformanceMonitor:
                 f.write(report_text)
         
         return report_text
+
+  
+class ConvergenceMonitor:
+    """Monitors convergence of MPC optimization"""
+    def __init__(self, position_tolerance=1e-3, orientation_tolerance=1e-2, 
+                 control_tolerance=1e-3, window_size=5):
+        self.position_tolerance = position_tolerance
+        self.orientation_tolerance = orientation_tolerance
+        self.control_tolerance = control_tolerance
+        self.window_size = window_size
+        
+        # History buffers
+        self.state_history = []
+        self.control_history = []
+        self.error_history = []
+        
+        # Convergence flags
+        self.state_converged = False
+        self.control_converged = False
+        self.error_converged = False
+        
+        self.logger = logging.getLogger(__name__)
+    
+    def update(self, current_state: RobotState, control_input: np.ndarray, 
+               tracking_error: float) -> Dict[str, bool]:
+        """Update convergence status"""
+        # Add new data to history
+        self.state_history.append(current_state.to_array())
+        self.control_history.append(control_input)
+        self.error_history.append(tracking_error)
+        
+        # Keep only recent history
+        if len(self.state_history) > self.window_size:
+            self.state_history.pop(0)
+            self.control_history.pop(0)
+            self.error_history.pop(0)
+        
+        # Check convergence only if we have enough history
+        if len(self.state_history) < self.window_size:
+            return self._get_convergence_status()
+        
+        # Check state convergence
+        state_variations = np.std(self.state_history, axis=0)
+        self.state_converged = (
+            np.all(state_variations[:2] < self.position_tolerance) and  # position
+            state_variations[2] < self.orientation_tolerance            # orientation
+        )
+        
+        # Check control convergence
+        control_variations = np.std(self.control_history, axis=0)
+        self.control_converged = np.all(control_variations < self.control_tolerance)
+        
+        # Check error convergence
+        error_variation = np.std(self.error_history)
+        self.error_converged = error_variation < self.position_tolerance
+        
+        # Log convergence status
+        self._log_convergence_status()
+        
+        return self._get_convergence_status()
+    
+    def _get_convergence_status(self) -> Dict[str, bool]:
+        """Get current convergence status"""
+        return {
+            'state_converged': self.state_converged,
+            'control_converged': self.control_converged,
+            'error_converged': self.error_converged,
+            'fully_converged': (self.state_converged and 
+                              self.control_converged and 
+                              self.error_converged)
+        }
+    
+    def _log_convergence_status(self):
+        """Log convergence information"""
+        if len(self.state_history) == self.window_size:
+            state_vars = np.std(self.state_history, axis=0)
+            control_vars = np.std(self.control_history, axis=0)
+            error_var = np.std(self.error_history)
+            
+            self.logger.debug(
+                f"Convergence Status:\n"
+                f"Position variation: {state_vars[:2]}\n"
+                f"Orientation variation: {state_vars[2]}\n"
+                f"Control variation: {control_vars}\n"
+                f"Error variation: {error_var}"
+            )
+    
+    def get_convergence_metrics(self) -> Dict[str, float]:
+        """Get detailed convergence metrics"""
+        if len(self.state_history) < 2:
+            return {}
+            
+        state_vars = np.std(self.state_history, axis=0)
+        control_vars = np.std(self.control_history, axis=0)
+        
+        return {
+            'position_variation': float(np.mean(state_vars[:2])),
+            'orientation_variation': float(state_vars[2]),
+            'velocity_variation': float(control_vars[0]),
+            'angular_velocity_variation': float(control_vars[1]),
+            'error_variation': float(np.std(self.error_history)),
+            'mean_tracking_error': float(np.mean(self.error_history))
+        }
