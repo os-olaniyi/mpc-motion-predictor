@@ -6,7 +6,7 @@ initial_state:
   theta: 0.0
 
 mpc:
-  horizon: 50   #Originallyset at 20
+  horizon: 20   #Originallyset at 20  50
   time_step: 0.1
   state_weights: [10.0, 10.0, 1.0]
   control_weights: [0.1, 0.1]

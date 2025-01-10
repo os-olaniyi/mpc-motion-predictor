@@ -1,0 +1,23 @@
+MPC Performance Report
+======================
+Total Iterations: 280
+Success Rate: 100.00%
+
+Convergence Metrics
+------------------
+Position Variation: 3.150220 m
+Orientation Variation: 0.283642 rad
+Velocity Variation: 0.024564 m/s
+Angular Velocity Variation: 0.127078 rad/s
+Mean Tracking Error: 0.069923 m
+
+Timing Statistics
+-----------------
+Average Solve Time: 41.80 ms
+Maximum Solve Time: 174.60 ms
+
+Tracking Performance
+-------------------
+Average Error: 0.0699 m
+Maximum Error: 0.0854 m
+Constraint Violation Rate: 0.00%

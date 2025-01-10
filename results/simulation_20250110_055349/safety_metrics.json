@@ -1,0 +1,26 @@
+{
+  "safety_statistics": {
+    "minimum_distance_ever": Infinity,
+    "average_minimum_distance": Infinity,
+    "total_collisions": 0,
+    "collision_rate": 0.0,
+    "safety_margin_violations": 0,
+    "average_safety_margin": Infinity
+  },
+  "safety_monitor_metrics": {
+    "safety_violations": {
+      "count": 0,
+      "avg_distance": null,
+      "min_distance": null
+    },
+    "near_misses": {
+      "count": 0,
+      "avg_distance": null
+    },
+    "reaction_time": {
+      "avg": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

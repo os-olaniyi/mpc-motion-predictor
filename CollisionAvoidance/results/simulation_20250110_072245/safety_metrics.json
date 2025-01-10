@@ -1,0 +1,26 @@
+{
+  "safety_statistics": {
+    "minimum_distance_ever": 0.9130050125173487,
+    "average_minimum_distance": 4.2977083720397635,
+    "total_collisions": 0,
+    "collision_rate": 0.0,
+    "safety_margin_violations": 14,
+    "average_safety_margin": 3.300673523518736
+  },
+  "safety_monitor_metrics": {
+    "safety_violations": {
+      "count": 14,
+      "avg_distance": 0.9406969704205503,
+      "min_distance": 0.9130050125173487
+    },
+    "near_misses": {
+      "count": 13,
+      "avg_distance": 1.0875453193401323
+    },
+    "reaction_time": {
+      "avg": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

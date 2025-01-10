@@ -1,0 +1,13 @@
+{
+  "total_steps": 250,
+  "final_position": [
+    16.656864039212046,
+    -0.3731876669976732,
+    -0.37758240840105506
+  ],
+  "total_distance": 17.368847912906904,
+  "average_tracking_error": 0.010393792674381903,
+  "max_tracking_error": 0.11415345411435648,
+  "average_computation_time": 0.16807831382751465,
+  "total_simulation_time": 24.900000000000084
+}
